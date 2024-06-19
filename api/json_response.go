@@ -1,11 +1,22 @@
 package api
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
-func JSONResponse(w http.ResponseWriter, statusCode int, data []byte) {
+type Map map[string]any
+
+func JSONResponse(w http.ResponseWriter, statusCode int, data Map) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	if _, err := w.Write(data); err != nil {
+
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return
+	}
+
+	if _, err := w.Write(bytes); err != nil {
 		return
 	}
 }
