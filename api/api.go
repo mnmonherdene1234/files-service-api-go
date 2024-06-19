@@ -1,18 +1,23 @@
 package api
 
 import (
+	"FilesServiceAPI/config"
 	"fmt"
 	"log"
 	"net/http"
 )
 
 func Start() {
-	http.HandleFunc(Prefix, Handler)
+	port := config.Get("PORT")
+	prefix := config.Get("PREFIX")
 
-	fmt.Printf("Server is running on port %d\n", Port)
+	http.HandleFunc(prefix, Handler)
+
+	fmt.Printf("Listening on %s\n", port)
+	fmt.Printf("Prefix: %s\n", prefix)
 	log.Fatal(
 		http.ListenAndServe(
-			fmt.Sprintf(":%d", Port),
+			fmt.Sprintf(":%s", port),
 			AllowCORS(http.HandlerFunc(Handler)),
 		),
 	)
