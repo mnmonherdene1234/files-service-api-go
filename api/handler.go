@@ -1,18 +1,24 @@
 package api
 
 import (
+	"FilesServiceAPI/config"
+	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	path := getURLPath(r.URL.Path)
+	prefix := config.Get("PREFIX")
 
 	switch path {
-	case "/upload":
+	case prefix + "upload":
 		uploadHandler(w, r)
 		break
 	default:
@@ -54,7 +60,14 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}(file)
 
-	f, openFileErr := os.OpenFile("/pathToStoreFile/"+fileHeader.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+	FilesPath := config.Get("FILES_PATH")
+	now := time.Now()
+	extension := filepath.Ext(fileHeader.Filename)
+	filename := strings.TrimSuffix(fileHeader.Filename, extension)
+	nowFilename := fmt.Sprintf("%s_%d%s", filename, now.Nanosecond(), extension)
+	fullFilepath := filepath.Join(FilesPath, nowFilename)
+
+	f, openFileErr := os.OpenFile(fullFilepath, os.O_WRONLY|os.O_CREATE, 0666)
 
 	if openFileErr != nil {
 		JSONResponse(w, http.StatusInternalServerError, Map{
